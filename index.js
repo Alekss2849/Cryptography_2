@@ -6,6 +6,7 @@
 //And so we found word "street"
 //After this we could xor the known string cipher with any other and the xor it with found string
 
+const fs = require('fs');
 const prompt = require('prompt-sync')();
 
 const startText = [
@@ -34,7 +35,7 @@ getBytesFromCipher = hexString => hexString.match(/.{1,2}/g).map(n => parseInt(n
 getBytesFromText = text => new TextEncoder().encode(text);
 getTextFromBytes = byteArray => new TextDecoder().decode(new Uint8Array(byteArray));
 
-const FINAL_STRING = '';
+const FINAL_STRING = 'For who would bear the whips and scorns of time';
 const FINAL_INDEX = 0;
 const TEXT_BYTES = startText.map(getBytesFromCipher);
 
@@ -46,7 +47,7 @@ const bytesXor = (arr1, arr2) => {
 consoleGuessing = () =>{
     console.log('Start values\n')
     for(let i = 0; i < startText.length; ++i){
-        console.log(`${i}) ${startText[i]}\n`);
+        console.log(`${i}) ${startText[i]}`);
     }
     console.log('\n\n');
     while(true){
@@ -73,12 +74,20 @@ consoleGuessing = () =>{
 }
 
 printResult = () =>{
-
+    const res = startText.map((text, index) =>{
+        const textLength = text.length < startText[FINAL_INDEX].length ? text.length : startText[FINAL_INDEX].length;
+        const textCut = text.slice(0, textLength);
+        const textKnownCut = startText[FINAL_INDEX].slice(0, textLength);
+        return getTextFromBytes(bytesXor(bytesXor(getBytesFromCipher(textCut), getBytesFromCipher(textKnownCut)), getBytesFromText(FINAL_STRING)));
+    }).join('\n');
+    console.log(res);
+    fs.writeFileSync('./output.txt', res, {encoding: "utf8"});
 }
 
 main = () => {
     consoleGuessing();
-    // printResult();
+    // Uncomment to see results
+    printResult();
 }
 
 if(require.main === module){
